@@ -1,0 +1,93 @@
+import java.io.IOException;
+import java.io.OutputStream;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.nio.charset.StandardCharsets;
+
+public class Main {
+
+    public static void main(String[] args) {
+        final int PORT = 1989;
+        ServerSocket serverSocket = null;
+
+        try {
+            serverSocket = new ServerSocket(PORT);
+            System.out.println("Sunucu " + PORT + " portunda başlatıldı...");
+            System.out.println("Tarayıcıdan http://localhost:1989 adresine giderek bağlanabilirsiniz.");
+
+            while (true) {
+                System.out.println("\n--- Yeni bir istemci bağlantısı bekleniyor... ---");
+                Socket clientSocket = null;
+
+                try {
+                    clientSocket = serverSocket.accept();
+                    System.out.println("İstemci bağlandı: " + clientSocket.getInetAddress().getHostAddress());
+
+                    String htmlBody = "<!DOCTYPE html>" +
+                            "<html lang='tr'>" +
+                            "<head>" +
+                            "    <meta charset='UTF-8'>" +
+                            "    <title>Eren Polat Web Sunucusu</title>" +
+                            "    <style>" +
+                            "        body { font-family: 'Arial', sans-serif; background-color: #ffffff; color: #333; margin-top: 60px; }" +
+                            "        .container { max-width: 800px; margin: auto; }" +
+                            "        h1 { color: #0056b3; text-align: center; font-style: italic; }" +
+                            "        h2 { color: #555; text-align: center; }" +
+                            "        p { font-family: 'Georgia', serif; font-size: 1.1em; line-height: 1.6; color: #4a4a4a; text-align: center; }" +
+                            "    </style>" +
+                            "</head>" +
+                            "<body>" +
+                            "    <div class='container'>" +
+
+
+                            "        <h1>Eren Polat</h1>" +
+                            "        <h2>1240505018</h2>" +
+                            "        <p>" +
+                            "           Yazılım Mühendisliği 2. sınıf öğrencisiyim. Oyun oynamayı, " +
+                            "            yemek yapmayı ve  futbol oynamayı severim. <br><br>" +
+                            "           Bu gördüğünüz sayfa ise, <b>hiçbir üçüncü parti kütüphane kullanılmadan</b>, " +
+                            "           sadece Java ile yazdığım bir web sunucusu tarafından sunulmaktadır." +
+                            "        </p>" +
+
+                            "    </div>" +
+                            "</body>" +
+                            "</html>";
+
+                    String httpResponse = "HTTP/1.1 200 OK\r\n" +
+                            "Content-Type: text/html; charset=utf-8\r\n" +
+                            "Content-Length: " + htmlBody.getBytes("UTF-8").length + "\r\n" +
+                            "\r\n" +
+                            htmlBody;
+
+                    OutputStream out = clientSocket.getOutputStream();
+                    out.write(httpResponse.getBytes("UTF-8"));
+                    out.flush();
+
+                    System.out.println("İstemciye yanıt gönderildi.");
+
+                } catch (IOException e) {
+                    System.err.println("İstemci ile iletişimde hata: " + e.getMessage());
+                } finally {
+                    if (clientSocket != null) {
+                        try {
+                            clientSocket.close();
+                            System.out.println("İstemci bağlantısı kapatıldı.");
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                        }
+                    }
+                }
+            }
+        } catch (IOException e) {
+            System.err.println("Sunucu " + PORT + " portunda başlatılamadı: " + e.getMessage());
+        } finally {
+            if (serverSocket != null) {
+                try {
+                    serverSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+}
